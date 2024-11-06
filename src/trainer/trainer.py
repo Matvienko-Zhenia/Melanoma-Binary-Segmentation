@@ -21,10 +21,13 @@ class Trainer:
             loss_fn: object,
             epochs: int,
             data_tr: DataLoader,
+            data_val: DataLoader,
             path_file: str,
             device: str,
             scheduler: Union[LRScheduler, None] = None,
     ) -> dict:
+
+        global_loss = float("inf")
 
         for epoch in range(epochs):
             tic = time()
@@ -52,4 +55,41 @@ class Trainer:
             toc = time()
             print('loss: %f' % avg_loss)
 
+            current_loss_valid = self.validation(
+                model=model,
+                data_val=data_val,
+                loss_fn=loss_fn,
+                device=device,
+            )
+
+            # show intermediate results
+            model.eval()  # testing mode
+
+            if current_loss_valid <= global_loss:
+                global_loss = current_loss_valid
+                torch.save(model.state_dict(), path_file)
+
         return model
+
+    def validation(
+            self,
+            model: nn.Module,
+            data_val: DataLoader,
+            loss_fn: object,
+            device: str,
+    ) -> np.array:
+        loss = []
+
+        model.eval()
+        with torch.no_grad():
+            for X_batch, Y_batch in data_val:
+                X_batch = X_batch.to(device)
+                Y_batch = Y_batch.to(device)
+
+                Y_pred = model(X_batch)
+                loss_value = loss_fn(Y_batch, Y_pred)
+
+                loss += [loss_value.detach().cpu().numpy().tolist()]
+
+        loss = np.array(loss).mean()
+        return loss

@@ -26,6 +26,9 @@ class Trainer:
             device: str,
             scheduler: Union[LRScheduler, None] = None,
     ) -> dict:
+        epochs_list = []
+        loss_train = []
+        loss_valid = []
 
         global_loss = float("inf")
 
@@ -55,12 +58,17 @@ class Trainer:
             toc = time()
             print('loss: %f' % avg_loss)
 
+            current_loss_train = avg_loss.detach().cpu().numpy().tolist()
             current_loss_valid = self.validation(
                 model=model,
                 data_val=data_val,
                 loss_fn=loss_fn,
                 device=device,
             )
+
+            loss_train += [current_loss_train]
+            loss_valid += [current_loss_valid]
+            epochs_list += [epoch]
 
             # show intermediate results
             model.eval()  # testing mode
@@ -69,7 +77,12 @@ class Trainer:
                 global_loss = current_loss_valid
                 torch.save(model.state_dict(), path_file)
 
-        return model
+        return {
+            "loss_train": loss_train,
+            "loss_valid": loss_valid,
+            "epochs_list": epochs_list,
+            "model": model,
+        }
 
     def validation(
             self,

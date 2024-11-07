@@ -13,6 +13,14 @@ from torch.utils.data import DataLoader
 
 
 class Trainer:
+    """
+    A class for training, validating, and evaluating machine learning models.
+
+    This class encapsulates the functionality needed to train a neural network
+    model, validate its performance on a separate dataset, and evaluate it using
+    custom metrics. It also includes methods for making predictions with the model.
+
+    """
 
     def train(
             self,
@@ -26,6 +34,30 @@ class Trainer:
             device: str,
             scheduler: Union[LRScheduler, None] = None,
     ) -> dict:
+        """
+        Trains the model for a specified number of epochs.
+
+        :param model: The model to be trained.
+        :type model: nn.Module
+        :param opt: The optimizer used for training the model.
+        :type opt: Optimizer
+        :param loss_fn: The loss function to compute the training loss.
+        :type loss_fn: object
+        :param epochs: The number of epochs to train the model.
+        :type epochs: int
+        :param data_tr: DataLoader for the training dataset.
+        :type data_tr: DataLoader
+        :param data_val: DataLoader for the validation dataset.
+        :type data_val: DataLoader
+        :param path_file: The path to save the best model weights.
+        :type path_file: str
+        :param device: The device to perform computations on (e.g., "cpu" or "cuda").
+        :type device: str
+        :param scheduler: Learning rate scheduler (optional).
+        :type scheduler: Union[LRScheduler, None]
+        :returns: A dictionary containing training and validation losses and the model.
+        :rtype: dict
+        """
         epochs_list = []
         loss_train = []
         loss_valid = []
@@ -91,6 +123,20 @@ class Trainer:
             loss_fn: object,
             device: str,
     ) -> np.array:
+        """
+        Validates the model on the validation dataset.
+
+        :param model: The model to be validated.
+        :type model: nn.Module
+        :param data_val: DataLoader for the validation dataset.
+        :type data_val: DataLoader
+        :param loss_fn: The loss function to compute validation loss.
+        :type loss_fn: object
+        :param device: The device to perform computations on.
+        :type device: str
+        :returns: The average validation loss.
+        :rtype: np.array
+        """
         loss = []
 
         model.eval()

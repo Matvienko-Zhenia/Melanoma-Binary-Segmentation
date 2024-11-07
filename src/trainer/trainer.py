@@ -152,3 +152,18 @@ class Trainer:
 
         loss = np.array(loss).mean()
         return loss
+
+    def predict(self, model, data):
+        """
+        Makes predictions using the trained model.
+
+        :param model: The trained model to use for predictions.
+        :type model: nn.Module
+        :param data: DataLoader containing the input data for predictions.
+        :type data: DataLoader
+        :returns: An array of predictions.
+        :rtype: np.array
+        """
+        model.eval()
+        Y_pred = [X_batch for X_batch, _ in data]
+        return np.array(Y_pred)

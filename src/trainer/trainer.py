@@ -4,7 +4,6 @@ from typing import Union
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.optim.optimizer import Optimizer
 
 from torch.optim.lr_scheduler import LRScheduler
@@ -167,3 +166,32 @@ class Trainer:
         model.eval()
         Y_pred = [X_batch for X_batch, _ in data]
         return np.array(Y_pred)
+
+    def score_model(
+            self,
+            model: nn.Module,
+            metric: object,
+            data: DataLoader,
+            device: str,
+    ):
+        """
+        Evaluates the model using a specified metric.
+
+        :param model: The model to be evaluated.
+        :type model: nn.Module
+        :param metric: The metric function to use for evaluation.
+        :type metric: object
+        :param data: DataLoader for the dataset to evaluate on.
+        :type data: DataLoader
+        :param device: The device to perform computations on.
+        :type device: str
+        :returns: The average score computed using the metric.
+        :rtype: float
+        """
+        model.eval()
+        scores = 0
+        for X_batch, Y_label in data:
+            Y_pred = (torch.sigmoid(model(X_batch.to(device))) > 0.5).to(torch.float32)
+            scores += metric(Y_pred, Y_label.to(device)).mean().item()
+
+        return scores / len(data)

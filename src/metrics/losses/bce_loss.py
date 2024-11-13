@@ -1,11 +1,14 @@
 from typing import Any
 import torch
 
+from src.metrics.losses.iloss import ILoss
 
-class BCELoss:
+
+class BCELoss(ILoss):
     """
     A class that implements Binary Cross-Entropy Loss.
-    This class provides a method to compute the binary cross-entropy loss for model predictions.
+    This class inherits from the ILoss interface and provides a method to compute the binary cross-entropy loss for model predictions.
+    The binary cross-entropy loss is defined as:
     """
 
     def __init__(self) -> None:

@@ -2,19 +2,21 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from src.metrics.losses.iloss import ILoss
 
-class DiceLoss:
+
+class DiceLoss(ILoss):
     """
     A class that implements Dice Loss.
 
-    This class provides a method to compute
+    This class inherits from the ILoss interface and provides a method to compute
     the Dice loss for model predictions.
 
     The Dice loss is defined as:
     """
 
     def __init__(self) -> None:
-        pass
+        super().__init__()
 
     def dice_loss(self, y_real, y_pred):
         """

@@ -22,7 +22,7 @@ from skimage.io import imread
 from skimage.transform import resize
 
 from src.nn_models.nn_dependency_injection import NNContainer
-# from src.nn_models.segnet import SegNet # TODO: implement it!
+from src.nn_models.segnet import SegNet
 from src.nn_models.unet import UNet
 from src.nn_models.naive_cnn import NaiveCnn
 from src.utils.get_model import get_model_from_container

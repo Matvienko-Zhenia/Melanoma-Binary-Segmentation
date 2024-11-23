@@ -7,7 +7,7 @@ from dependency_injector import containers, providers
 
 from src.data.provider.gdrive_weights import WeightsProvider
 
-# from src.nn_models.segnet import SegNet # TODO: implement!
+from src.nn_models.segnet import SegNet
 from src.nn_models.unet import UNet
 from src.nn_models.naive_cnn import NaiveCnn
 
@@ -54,11 +54,11 @@ class NNContainer(containers.DeclarativeContainer):
         ]
     )
     
-    # weights_provider_segnet = providers.Singleton(
-    #     WeightsProvider,
-    #     file_id=os.getenv("SEGNET_WEIGHTS_GID"),
-    #     weights_path = Path(os.getenv("WEIGHTS_PATH_ROOT", "./artifacts/models"))
-    # ) # TODO: implement!
+    weights_provider_segnet = providers.Singleton(
+        WeightsProvider,
+        file_id=os.getenv("SEGNET_WEIGHTS_GID"),
+        weights_path = Path(os.getenv("WEIGHTS_PATH_ROOT", "./artifacts/models"))
+    ) # TODO: implement!
 
     weights_provider_unet = providers.Singleton(
         WeightsProvider,
@@ -81,10 +81,10 @@ class NNContainer(containers.DeclarativeContainer):
         NaiveCnn,
         weights_provider=weights_provider_unet,
     )
-    # segnet = providers.Factory(
-    #     SegNet,
-    #     weights_provider=weights_provider_segnet,
-    # ) # TODO: implement!
+    segnet = providers.Factory(
+        SegNet,
+        weights_provider=weights_provider_segnet,
+    ) # TODO: implement!
 
     default_nn = providers.Factory(
         UNet,

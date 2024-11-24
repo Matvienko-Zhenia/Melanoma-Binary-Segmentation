@@ -1,6 +1,10 @@
+import logging
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+from src.data.provider.gdrive_weights import WeightsProvider
 
 
 class SegNet(nn.Module):
@@ -10,15 +14,23 @@ class SegNet(nn.Module):
     This class implements the SegNet model, which includes an encoder-decoder
     structure with max pooling and unpooling layers. It supports loading pre-trained
     weights from a specified file.
+
+    :param weights_provider: An instance of :py:class:`.WeightsProvider` to manage model weights.
+    :type weights_provider: :py:class:`.WeightsProvider`
     """
 
     def __init__(
-            self
+            self,
+            weights_provider: WeightsProvider,
     ) -> None:
         """
         Initializes the SegNet instance.
+
+        :param weights_provider: An instance of :py:class:`.WeightsProvider` to manage model weights.
+        :type weights_provider: :py:class:`.WeightsProvider`
         """
         super(SegNet, self).__init__()
+        self._weights_provider = weights_provider
 
         self.enc_conv0 = nn.Sequential(
             nn.ReLU(),
@@ -180,3 +192,40 @@ class SegNet(nn.Module):
             )
         except Exception as e:
             raise Exception
+
+    def load_from_provider(
+            self,
+            weights_name: str = "SegNet/SegNet_dice_250e.pt",
+            device: str = "cpu",
+            force_download: bool = False,
+    ) -> None:
+        """Initialise pytorch trained model
+
+        :param weights_name: string name of model, default value: `SegNet/SegNet_dice_250e.pt`
+        :type weights_name: str
+        :param device: Device weights and model mapping- `cpu` or `cuda`
+        :type device: str
+        :param force_download: Operation to run against a and b
+        :type force_download: bool
+
+        :raises Exception: If any
+
+        :returns:
+            - None: Inplace method
+        """
+
+        try:
+            self._weights_provider.download_file(
+                file_name=weights_name,
+                force=force_download,
+            )
+            weights_path = self._weights_provider.get_weights_path()
+            self.load_state_dict(
+                torch.load(
+                    str(weights_path / weights_name),
+                    map_location=torch.device(device),
+                )
+            )
+        except Exception as e:
+            print(e)
+            logging.WARNING(f"For {self.__class__.__name__} none weigts found:\n{str(e)}")

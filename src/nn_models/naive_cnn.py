@@ -1,5 +1,13 @@
+import logging
+
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+
+from src.data.provider.gdrive_weights import WeightsProvider
+
+logger = logging.getLogger('uvicorn.error')
+logger.setLevel("INFO")
 
 
 class NaiveCnn(nn.Module):
@@ -9,15 +17,23 @@ class NaiveCnn(nn.Module):
     This class implements a simple CNN architecture with multiple convolutional
     layers for feature extraction and a final output layer to generate predictions.
     It also supports loading pre-trained weights from a specified file.
+
+    :param weights_provider: An instance of :py:class:`.WeightsProvider` to manage model weights.
+    :type weights_provider: :py:class:`.WeightsProvider`
     """
 
     def __init__(
-            self
+            self,
+            weights_provider: WeightsProvider,
     ) -> None:
         """
         Initializes the NaiveCnn instance.
+
+        :param weights_provider: An instance of :py:class:`WeightsProvider <src.data.provider.gdrive_weights.WeightsProvider>` to manage model weights.
+        :type weights_provider: :py:class:`WeightsProvider <src.data.provider.gdrive_weights.WeightsProvider>`
         """
         super(NaiveCnn).__init__()
+        self._weights_provider = weights_provider
 
         self.enc_conv0 = nn.Sequential(
             nn.ReLU(),
@@ -109,3 +125,40 @@ class NaiveCnn(nn.Module):
             )
         except Exception as e:
             raise Exception
+
+    def load_from_provider(
+            self,
+            weights_name: str = "NaiveCNN/NaiveCNN_dice_250e.pt",
+            device: str = "cpu",
+            force_download: bool = False,
+    ) -> None:
+        """Initialise pytorch trained model
+
+        :param weights_name: string name of model, default value: `NaiveCNN/NaiveCNN_dice_250e.pt`
+        :type weights_name: str
+        :param device: Device weights and model mapping- `cpu` or `cuda`
+        :type device: str
+        :param force_download: If True, forces the download even if the file already exists (default is False).
+        :type force_download: bool
+
+        :raises Exception: If any
+
+        :returns:
+            - None: Inplace method
+        """
+        try:
+            self._weights_provider.download_file(
+                file_name=weights_name,
+                force=force_download,
+            )
+            weights_path = self._weights_provider.get_weights_path()
+
+            self.load_state_dict(
+                torch.load(
+                    str(weights_path / weights_name),
+                    map_location=torch.device(device),
+                )
+            )
+        except Exception as e:
+            print(e)
+            logging.WARNING(f"For {self.__class__.__name__} none weigts found:\n{str(e)}")

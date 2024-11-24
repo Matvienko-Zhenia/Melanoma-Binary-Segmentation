@@ -1,0 +1,19 @@
+FROM node:lts
+
+WORKDIR /usr/src/front
+
+# Install dependencies
+COPY package*.json ./
+RUN npm install
+
+RUN npm install axios
+
+# Copy application code
+COPY . .
+
+# Build frontend  
+RUN npm run build
+
+EXPOSE 8080
+
+CMD ["npm", "run", "serve"]
